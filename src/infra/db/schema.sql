@@ -1,0 +1,68 @@
+-- Billing Service Database Schema
+
+CREATE TABLE IF NOT EXISTS budgets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  description VARCHAR(500) NOT NULL,
+  ownerId INT NOT NULL,
+  diagnosisId INT NOT NULL,
+  total DECIMAL(10, 2) DEFAULT 0,
+  creationDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+  deletedAt DATETIME NULL
+);
+
+CREATE TABLE IF NOT EXISTS vehicle_parts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  type VARCHAR(100) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  description VARCHAR(500) NOT NULL,
+  quantity INT NOT NULL DEFAULT 0,
+  price DECIMAL(10, 2) NOT NULL DEFAULT 0,
+  deletedAt DATETIME NULL,
+  creationDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS vehicle_services (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  description VARCHAR(500) NULL,
+  deletedAt DATETIME NULL
+);
+
+CREATE TABLE IF NOT EXISTS budget_vehicle_parts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budgetId INT NOT NULL,
+  vehiclePartId INT NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  FOREIGN KEY (budgetId) REFERENCES budgets(id),
+  FOREIGN KEY (vehiclePartId) REFERENCES vehicle_parts(id)
+);
+
+CREATE TABLE IF NOT EXISTS budget_vehicle_services (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budgetId INT NOT NULL,
+  vehicleServiceId INT NOT NULL,
+  price DECIMAL(10, 2) DEFAULT 0,
+  FOREIGN KEY (budgetId) REFERENCES budgets(id),
+  FOREIGN KEY (vehicleServiceId) REFERENCES vehicle_services(id)
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  budgetId INT NOT NULL,
+  serviceOrderId INT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'pending',
+  externalPaymentId VARCHAR(255) NULL,
+  paymentMethod VARCHAR(50) NULL,
+  paidAt DATETIME NULL,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (budgetId) REFERENCES budgets(id)
+);
+
+CREATE TABLE IF NOT EXISTS idempotency_keys (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  event_id VARCHAR(255) NOT NULL UNIQUE,
+  processed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
