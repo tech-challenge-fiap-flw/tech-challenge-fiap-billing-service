@@ -1,4 +1,4 @@
-name: OS Service CI/CD
+name: Billing Service CI/CD
 
 on:
   push:
