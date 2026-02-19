@@ -26,17 +26,17 @@ export class PaymentMySqlRepository implements IPaymentRepository {
   }
 
   async findById(id: PaymentId): Promise<PaymentEntity | null> {
-    const rows = await mysql.query<IPaymentProps>(`SELECT * FROM payments WHERE id = ?`, [id]);
+    const rows = await mysql.query(`SELECT * FROM payments WHERE id = ?`, [id]);
 
     if (rows.length === 0) {
       return null;
     }
 
-    return PaymentEntity.restore(rows[0]);
+    return PaymentEntity.restore(rows[0] as IPaymentProps);
   }
 
   async findByBudgetId(budgetId: number): Promise<PaymentEntity | null> {
-    const rows = await mysql.query<IPaymentProps>(
+    const rows = await mysql.query(
       `SELECT * FROM payments WHERE budgetId = ? ORDER BY createdAt DESC LIMIT 1`,
       [budgetId]
     );
@@ -45,11 +45,11 @@ export class PaymentMySqlRepository implements IPaymentRepository {
       return null;
     }
 
-    return PaymentEntity.restore(rows[0]);
+    return PaymentEntity.restore(rows[0] as IPaymentProps);
   }
 
   async findByExternalId(externalId: string): Promise<PaymentEntity | null> {
-    const rows = await mysql.query<IPaymentProps>(
+    const rows = await mysql.query(
       `SELECT * FROM payments WHERE externalId = ?`,
       [externalId]
     );
@@ -58,7 +58,7 @@ export class PaymentMySqlRepository implements IPaymentRepository {
       return null;
     }
 
-    return PaymentEntity.restore(rows[0]);
+    return PaymentEntity.restore(rows[0] as IPaymentProps);
   }
 
   async updateStatus(id: PaymentId, status: PaymentStatus): Promise<PaymentEntity | null> {

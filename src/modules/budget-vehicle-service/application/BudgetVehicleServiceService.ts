@@ -29,15 +29,21 @@ export class BudgetVehicleServiceService implements IBudgetVehicleServiceService
   async create(
     input: CreateBudgetVehicleServiceInput
   ): Promise<BudgetVehicleServiceOutput> {
-    const entity = BudgetVehicleServiceEntity.create(input);
+    const props = {
+      budgetId: input.budgetId,
+      vehicleServiceId: input.vehicleServiceId,
+      price: input.price,
+      constructor: { name: "RowDataPacket" }
+    } as any;
 
+    const entity = BudgetVehicleServiceEntity.create(props);
     const data = await this.repo.create(entity);
-
     return data.toJSON();
   }
 
   async createMany(input: CreateManyBudgetVehicleServiceInput): Promise<BudgetVehicleServiceOutput[]> {
     const created: BudgetVehicleServiceOutput[] = [];
+
 
     for (const id of input.vehicleServiceIds) {
       created.push(
@@ -54,7 +60,7 @@ export class BudgetVehicleServiceService implements IBudgetVehicleServiceService
   async update(id: number, partial: Partial<CreateBudgetVehicleServiceInput>): Promise<BudgetVehicleServiceOutput> {
     await this.findById(id);
 
-    const updated = await this.repo.update(id, partial);
+    const updated = await this.repo.update(id, partial as any);
 
     if (!updated) {
       throw new NotFoundServerException('Budget Vehicle Service not found');

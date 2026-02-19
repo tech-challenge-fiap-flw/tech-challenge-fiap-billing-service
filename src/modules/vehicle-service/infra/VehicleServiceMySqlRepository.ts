@@ -24,13 +24,13 @@ export class VehicleServiceMySqlRepository implements VehicleServiceRepository {
   }
 
   async findById(id: VehicleServiceId): Promise<VehicleServiceEntity | null> {
-    const rows = await mysql.query<VehicleServiceProps>(`SELECT * FROM vehicle_services WHERE id = ?`, [id]);
+    const rows = await mysql.query(`SELECT * FROM vehicle_services WHERE id = ?`, [id]);
     
     if (rows.length === 0) {
       return null;
     }
     
-    return VehicleServiceEntity.restore(rows[0]);
+    return VehicleServiceEntity.restore(rows[0] as VehicleServiceProps);
   }
 
   async update(id: VehicleServiceId, partial: Partial<VehicleServiceProps>): Promise<VehicleServiceEntity | null> {
@@ -40,13 +40,13 @@ export class VehicleServiceMySqlRepository implements VehicleServiceRepository {
     const params = keys.map((k) => (partial as any)[k]);
     params.push(id);
 
-    await mysql.query<ResultSetHeader>(`UPDATE vehicle_services SET ${setClause} WHERE id = ?`, params);
+    await mysql.query(`UPDATE vehicle_services SET ${setClause} WHERE id = ?`, params);
     
     return await this.findById(id);
   }
 
   async softDelete(id: VehicleServiceId): Promise<void> {
-    await mysql.query<ResultSetHeader>(`UPDATE vehicle_services SET deletedAt = NOW() WHERE id = ?`, [id]);
+    await mysql.query(`UPDATE vehicle_services SET deletedAt = NOW() WHERE id = ?`, [id]);
   }
 
   async list(offset: number, limit: number): Promise<VehicleServiceEntity[]> {
@@ -57,13 +57,13 @@ export class VehicleServiceMySqlRepository implements VehicleServiceRepository {
       LIMIT ${limit} OFFSET ${offset}
     `;
 
-    const rows = await mysql.query<VehicleServiceProps>(sql);
+    const rows = await mysql.query(sql);
     
-    return rows.map((row) => VehicleServiceEntity.restore(row));
+    return rows.map((row) => VehicleServiceEntity.restore(row as VehicleServiceProps));
   }
 
   async countAll(): Promise<number> {
-    const rows = await mysql.query<{ count: number }>(`SELECT COUNT(*) AS count FROM vehicle_services WHERE deletedAt IS NULL`);
+    const rows = await mysql.query(`SELECT COUNT(*) AS count FROM vehicle_services WHERE deletedAt IS NULL`);
     return Number(rows.at(0)?.count ?? 0);
   }
 }

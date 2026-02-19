@@ -28,13 +28,13 @@ export class VehiclePartMySqlRepository extends BaseRepository implements Vehicl
   }
 
   async findById(id: VehiclePartId): Promise<VehiclePartEntity | null> {
-    const rows = await mysql.query<VehiclePartProps>(`SELECT * FROM vehicle_parts WHERE id = ?`, [id]);
+    const rows = await mysql.query(`SELECT * FROM vehicle_parts WHERE id = ?`, [id]);
     
     if (rows.length === 0) {
       return null;
     }
     
-    return VehiclePartEntity.restore(rows[0]);
+    return VehiclePartEntity.restore(rows[0] as VehiclePartProps);
   }
 
   async update(id: VehiclePartId, partial: Partial<VehiclePartProps>): Promise<VehiclePartEntity | null> {
@@ -44,13 +44,13 @@ export class VehiclePartMySqlRepository extends BaseRepository implements Vehicl
     const params = keys.map((k) => (partial as any)[k]);
     params.push(id);
 
-    await mysql.query<ResultSetHeader>(`UPDATE vehicle_parts SET ${setClause} WHERE id = ?`, params);
+    await mysql.query(`UPDATE vehicle_parts SET ${setClause} WHERE id = ?`, params);
     
     return await this.findById(id);
   }
 
   async softDelete(id: VehiclePartId): Promise<void> {
-    await mysql.query<ResultSetHeader>(`UPDATE vehicle_parts SET deletedAt = NOW() WHERE id = ?`, [id]);
+    await mysql.query(`UPDATE vehicle_parts SET deletedAt = NOW() WHERE id = ?`, [id]);
   }
 
   async list(offset: number, limit: number): Promise<VehiclePartEntity[]> {
@@ -61,13 +61,13 @@ export class VehiclePartMySqlRepository extends BaseRepository implements Vehicl
       LIMIT ${limit} OFFSET ${offset}
     `;
 
-    const rows = await mysql.query<VehiclePartProps>(sql);
+    const rows = await mysql.query(sql);
     
-    return rows.map((row) => VehiclePartEntity.restore(row));
+    return rows.map((row) => VehiclePartEntity.restore(row as VehiclePartProps));
   }
 
   async countAll(): Promise<number> {
-    const rows = await mysql.query<{ count: number }>(`SELECT COUNT(*) AS count FROM vehicle_parts WHERE deletedAt IS NULL`);
+    const rows = await mysql.query(`SELECT COUNT(*) AS count FROM vehicle_parts WHERE deletedAt IS NULL`);
     return Number(rows.at(0)?.count ?? 0);
   }
 }
