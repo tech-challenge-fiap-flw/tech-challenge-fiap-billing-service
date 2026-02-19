@@ -120,6 +120,10 @@ npm test
 npm run test:coverage
 ```
 
+### Cobertura de Testes Unitários
+
+![Testes Unitários](teste-unitario.png)
+
 ## Deploy
 
 ```bash
