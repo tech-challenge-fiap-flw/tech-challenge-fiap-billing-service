@@ -1,9 +1,12 @@
+
 import { NotFoundServerException } from '../../../shared/application/ServerException';
 import { PaymentEntity, PaymentStatus } from '../domain/Payment';
 import { IPaymentRepository } from '../domain/IPaymentRepository';
 import { SqsPublisher } from '../../../infra/messaging/SqsPublisher';
 import { EventTypes } from '../../../shared/events/EventTypes';
 import { logger } from '../../../utils/logger';
+
+import { MercadoPagoConfig, Payment } from 'mercadopago';
 
 export type CreatePaymentInput = {
   budgetId: number;
@@ -24,28 +27,54 @@ export interface IPaymentService {
 }
 
 export class PaymentService implements IPaymentService {
+  private mpConfig: MercadoPagoConfig;
+  private mpPayment: Payment;
+
   constructor(
     private readonly repo: IPaymentRepository,
     private readonly sqsPublisher: SqsPublisher,
-  ) {}
+  ) {
+    this.mpConfig = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '' });
+    this.mpPayment = new Payment(this.mpConfig);
+  }
 
   async createPayment(input: CreatePaymentInput): Promise<PaymentOutput> {
     const existing = await this.repo.findByBudgetId(input.budgetId);
-
     if (existing && existing.status === 'pending') {
       return existing.toJSON();
     }
+
+    let mpResult;
+    try {
+      mpResult = await this.mpPayment.create({
+        body: {
+          transaction_amount: input.amount,
+          payment_method_id: input.method || 'pix',
+          payer: {
+            email: input.payerEmail || 'comprador@email.com',
+          },
+          description: `Pagamento orçamento #${input.budgetId}`,
+          notification_url: process.env.MERCADOPAGO_WEBHOOK_URL || '',
+        }
+      });
+    } catch (err) {
+      logger.error({ err }, 'Erro ao criar pagamento no MercadoPago');
+      throw new Error('Erro ao criar pagamento no MercadoPago');
+    }
+
+    const externalId = mpResult && mpResult.id ? String(mpResult.id) : undefined;
 
     const entity = PaymentEntity.create({
       budgetId: input.budgetId,
       amount: input.amount,
       method: input.method,
       payerEmail: input.payerEmail,
+      externalId,
     });
 
     const created = await this.repo.create(entity);
 
-    logger.info(`Payment created for budget ${input.budgetId}`, { paymentId: created.id });
+    logger.info({ paymentId: created.id, mpId: externalId }, `Payment created for budget ${input.budgetId}`);
 
     return created.toJSON();
   }
@@ -151,27 +180,35 @@ export class PaymentService implements IPaymentService {
 
   private async publishPaymentConfirmed(payment: PaymentEntity): Promise<void> {
     try {
-      await this.sqsPublisher.publish(EventTypes.PAYMENT_CONFIRMED, {
-        paymentId: payment.id,
-        budgetId: payment.budgetId,
-        status: 'approved',
-        confirmedAt: new Date().toISOString(),
+      await this.sqsPublisher.publish({
+        eventType: EventTypes.PAYMENT_CONFIRMED,
+        correlationId: String(payment.id),
+        payload: {
+          paymentId: payment.id,
+          budgetId: payment.budgetId,
+          status: 'approved',
+          confirmedAt: new Date().toISOString(),
+        },
       });
     } catch (error) {
-      logger.error('Failed to publish PAYMENT_CONFIRMED event', error);
+      logger.error({ error }, 'Failed to publish PAYMENT_CONFIRMED event');
     }
   }
 
   private async publishPaymentFailed(payment: PaymentEntity): Promise<void> {
     try {
-      await this.sqsPublisher.publish(EventTypes.PAYMENT_FAILED, {
-        paymentId: payment.id,
-        budgetId: payment.budgetId,
-        status: payment.status,
-        failedAt: new Date().toISOString(),
+      await this.sqsPublisher.publish({
+        eventType: EventTypes.PAYMENT_FAILED,
+        correlationId: String(payment.id),
+        payload: {
+          paymentId: payment.id,
+          budgetId: payment.budgetId,
+          status: payment.status,
+          failedAt: new Date().toISOString(),
+        },
       });
     } catch (error) {
-      logger.error('Failed to publish PAYMENT_FAILED event', error);
+      logger.error({ error }, 'Failed to publish PAYMENT_FAILED event');
     }
   }
 }

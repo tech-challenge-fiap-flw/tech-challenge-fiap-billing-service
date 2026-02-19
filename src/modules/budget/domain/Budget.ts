@@ -1,6 +1,8 @@
+import { RowDataPacket } from "mysql2";
+
 export type BudgetId = number;
 
-export interface BudgetProps {
+export interface BudgetProps extends RowDataPacket {
   id: BudgetId;
   description: string;
   ownerId: number;
@@ -15,6 +17,7 @@ export class BudgetEntity {
 
   static create(input: Omit<BudgetProps, 'id' | 'creationDate' | 'deletedAt' | 'total'> & { total?: number }) {
     return new BudgetEntity({
+      ...( {} as RowDataPacket ),
       id: 0,
       description: input.description,
       ownerId: input.ownerId,

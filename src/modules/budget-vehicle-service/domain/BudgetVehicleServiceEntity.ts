@@ -1,6 +1,8 @@
+import { RowDataPacket } from "mysql2";
+
 export type BudgetVehicleServiceId = number;
 
-export interface IBudgetVehicleServiceProps {
+export interface IBudgetVehicleServiceProps extends RowDataPacket {
   id?: BudgetVehicleServiceId;
   budgetId: number;
   vehicleServiceId: number;
