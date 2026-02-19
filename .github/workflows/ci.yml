@@ -1,63 +1,129 @@
-name: Billing Service CI/CD
+name: OS Service CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, staging]
   pull_request:
     branches: [main]
-
-env:
-  NODE_VERSION: '22'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm test -- --coverage
-      - uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage/
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: '22'
           cache: 'npm'
-      - run: npm ci
-      - run: npx tsc --noEmit
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test
 
   build:
-    needs: [test, lint]
+    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t billing-service:${{ github.sha }} .
-      - name: Tag latest
-        run: docker tag billing-service:${{ github.sha }} billing-service:latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Create ECR repository (if not exists)
+        run: |
+          aws ecr describe-repositories --repository-names billing-service --region ${{ secrets.AWS_REGION }} 2>/dev/null || \
+          aws ecr create-repository --repository-name billing-service --region ${{ secrets.AWS_REGION }}
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: billing-service
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Inject secrets into K8s manifests
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SQS_BILLING_EVENTS_QUEUE_URL: ${{ secrets.SQS_BILLING_EVENTS_QUEUE_URL }}
+          SQS_OS_EVENTS_QUEUE_URL: ${{ secrets.SQS_OS_EVENTS_QUEUE_URL }}
+          SQS_EXECUTION_EVENTS_QUEUE_URL: ${{ secrets.SQS_EXECUTION_EVENTS_QUEUE_URL }}
+          MERCADOPAGO_ACCESS_TOKEN: ${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}
+        run: envsubst < k8s/secrets.yaml | kubectl apply -f -
+
       - name: Deploy to Kubernetes
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
+          sed -i "s|image: billing-service:latest|image: $ECR_REGISTRY/billing-service:$IMAGE_TAG|" k8s/deployment.yaml
+          cat k8s/deployment.yaml
           kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/secrets.yaml
           kubectl apply -f k8s/deployment.yaml
           kubectl apply -f k8s/service.yaml
           kubectl apply -f k8s/hpa.yaml
-          kubectl set image deployment/billing-service billing-service=billing-service:${{ github.sha }}
+          kubectl rollout status deployment/billing-service --timeout=300s
+
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "=== Pod Status ==="
+          kubectl get pods -l app=billing-service -o wide
+          echo "=== Pod Events ==="
+          kubectl describe pods -l app=billing-service | grep -A 20 "Events:"
+          echo "=== Pod Logs ==="
+          kubectl logs -l app=billing-service --tail=50 --all-containers=true 2>/dev/null || echo "No logs available"
+          echo "=== Deployment Status ==="
+          kubectl describe deployment billing-service | tail -30

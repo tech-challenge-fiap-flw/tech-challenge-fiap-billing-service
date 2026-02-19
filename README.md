@@ -141,7 +141,7 @@ kubectl apply -f k8s/
 | `AWS_REGION` | Região AWS |
 | `AWS_ACCESS_KEY_ID` | Chave de acesso AWS |
 | `AWS_SECRET_ACCESS_KEY` | Chave secreta AWS |
-| `SQS_BILLING_QUEUE_URL` | URL fila SQS billing |
-| `SQS_OS_QUEUE_URL` | URL fila SQS OS |
-| `SQS_EXECUTION_QUEUE_URL` | URL fila SQS execution |
+| `SQS_BILLING_EVENTS_QUEUE_URL` | URL fila SQS billing |
+| `SQS_OS_EVENTS_QUEUE_URL` | URL fila SQS OS |
+| `SQS_EXECUTION_EVENTS_QUEUE_URL` | URL fila SQS execution |
 | `MERCADOPAGO_ACCESS_TOKEN` | Token de acesso MercadoPago |

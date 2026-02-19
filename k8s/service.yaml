@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: billing-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: billing-service
   ports:
