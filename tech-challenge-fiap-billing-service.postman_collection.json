@@ -1,0 +1,677 @@
+{
+  "info": {
+    "_postman_id": "1f0a9777-c650-4ec7-ab86-a666c8d1c9ad",
+    "name": "tech-challenge-fiap-billing-service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "17743052"
+  },
+  "item": [
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "[Budgets, POST] Criar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"description\": \"Teste Etapa 4 budget\",\r\n    \"ownerId\": 18,\r\n    \"diagnosisId\": 53,\r\n    \"vehicleParts\": [\r\n        { \"vehiclePartId\": 1, \"quantity\": 1 }\r\n    ],\r\n    \"vehicleServicesIds\": [1]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/budgets",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budgets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Budget, GET] By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/budgets/67",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budgets",
+                "67"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Budget Vehicle Services",
+      "item": [
+        {
+          "name": "[Budget-vehicle-services, POST] Criar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"budgetId\": 4,\r\n    \"vehicleServiceId\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/budget-vehicle-services",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budget-vehicle-services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Budget-vehicle-services, GET] ByID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/budget-vehicle-services/2",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budget-vehicle-services",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Budget-vehicle-services, DELETE] Deletar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/budget-vehicle-services/2",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budget-vehicle-services",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Budget-vehicle-services, PUT] Atualizar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"price\": 10 \r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/budget-vehicle-services/3",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budget-vehicle-services",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Budget Vehicle Parts",
+      "item": [
+        {
+          "name": "[Budget-vehicle-parts, POST] Criar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"budgetId\": 4,\r\n    \"parts\": [\r\n        { \"vehiclePartId\": 1, \"quantity\": 1 }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/budget-vehicle-parts",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "budget-vehicle-parts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vehicle Parts",
+      "item": [
+        {
+          "name": "[Vehicle-parts, POST] Criar partes do veiculo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"teste\",\r\n    \"name\": \"teste\",\r\n    \"description\": \"Roda da frente\",\r\n    \"quantity\": 10,\r\n    \"price\": 12\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, GET] Search",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTc1OTkzODkzMiwiZXhwIjoxNzYwMDI1MzMyfQ.giIun_wK_enuLnyhZXndU_mq77FLYjS2jGkeTVC_FuM",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts/search?name=teste",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "teste"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, PUT] Alterar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"teste alterado\",\r\n    \"price\": 42\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts/5",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, DELETE] Deletar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTc1OTkzODkzMiwiZXhwIjoxNzYwMDI1MzMyfQ.giIun_wK_enuLnyhZXndU_mq77FLYjS2jGkeTVC_FuM",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts/1",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, GET] By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts/533",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts",
+                "533"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, DELETE] Deletar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts/2",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-parts, GET] List",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-parts?limit=1&page=2",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-parts"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "1"
+                },
+                {
+                  "key": "page",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vehicle Services",
+      "item": [
+        {
+          "name": "[Vehicle-services, POST] Criar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Troca de filtro\",\r\n    \"description\": \"\",\r\n    \"price\": 100\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-services",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-services, PUT] Atualizar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"description\": \"ass\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-services/2",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-services",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-services, DELETE] Deletar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-services/1",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-services",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-services, GET] By ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-services/1",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-services",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "[Vehicle-services, GET] All",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://{{path}}:3000/vehicle-services/",
+              "protocol": "http",
+              "host": [
+                "{{path}}"
+              ],
+              "port": "3000",
+              "path": [
+                "vehicle-services",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
