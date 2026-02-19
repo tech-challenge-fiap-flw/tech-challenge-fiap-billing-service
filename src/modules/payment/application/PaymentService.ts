@@ -29,11 +29,13 @@ export interface IPaymentService {
 export class PaymentService implements IPaymentService {
   private mpConfig: MercadoPagoConfig;
   private mpPayment: Payment;
+  private sqsPublisher: SqsPublisher | null;
 
   constructor(
     private readonly repo: IPaymentRepository,
-    private readonly sqsPublisher: SqsPublisher,
+    sqsPublisher?: SqsPublisher
   ) {
+    this.sqsPublisher = sqsPublisher || null;
     this.mpConfig = new MercadoPagoConfig({ accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '' });
     this.mpPayment = new Payment(this.mpConfig);
   }
@@ -179,6 +181,10 @@ export class PaymentService implements IPaymentService {
   }
 
   private async publishPaymentConfirmed(payment: PaymentEntity): Promise<void> {
+    if (!this.sqsPublisher) {
+      return;
+    }
+
     try {
       await this.sqsPublisher.publish({
         eventType: EventTypes.PAYMENT_CONFIRMED,
@@ -196,6 +202,10 @@ export class PaymentService implements IPaymentService {
   }
 
   private async publishPaymentFailed(payment: PaymentEntity): Promise<void> {
+    if (!this.sqsPublisher) {
+      return;
+    }
+
     try {
       await this.sqsPublisher.publish({
         eventType: EventTypes.PAYMENT_FAILED,

@@ -92,7 +92,7 @@ export class BudgetService implements IBudgetService {
         });
       }
 
-      return budgetJson;
+      return budgetJson as BudgetOutput;
     });
   }
 
@@ -105,7 +105,7 @@ export class BudgetService implements IBudgetService {
       throw new NotFoundServerException('Budget not found');
     }
 
-    return budget.toJSON();
+    return { ...budget.toJSON() } as BudgetOutput;
   }
 
   private async updateVehiclePart(vehicleParts: VehiclePartQuantity[]): Promise<number> {

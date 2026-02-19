@@ -13,7 +13,10 @@ import { authMiddleware } from '../../auth/AuthMiddleware';
 import { requireRole } from '../../auth/RoleMiddleware';
 
 const repository = new PaymentMySqlRepository();
-const sqsPublisher = new SqsPublisher();
+const sqsPublisher = process.env.SQS_QUEUE_URL
+  ? new SqsPublisher(process.env.SQS_QUEUE_URL)
+  : undefined;
+
 const service = new PaymentService(repository, sqsPublisher);
 
 export const paymentRouter = Router();
